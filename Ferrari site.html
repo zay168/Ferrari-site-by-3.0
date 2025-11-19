@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ferrari - Official Website</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700;900&family=Racing+Sans+One&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #111;
+            color: white;
+            overflow-x: hidden;
+        }
+        
+        .ferrari-red {
+            color: #FF2800;
+        }
+        .bg-ferrari-red {
+            background-color: #FF2800;
+        }
+        .border-ferrari-red {
+            border-color: #FF2800;
+        }
+
+        .racing-font {
+            font-family: 'Racing Sans One', cursive;
+        }
+
+        /* Custom Cursor */
+        .cursor {
+            width: 20px;
+            height: 20px;
+            border: 1px solid white;
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            mix-blend-mode: difference;
+            transition: transform 0.1s;
+        }
+        
+        .cursor-dot {
+            width: 4px;
+            height: 4px;
+            background: #FF2800;
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        /* Hero Gradient */
+        .hero-overlay {
+            background: linear-gradient(to top, #111 0%, transparent 60%),
+                        linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, transparent 40%);
+        }
+
+        /* Navigation Hover Effect */
+        .nav-link {
+            position: relative;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -5px;
+            left: 0;
+            background-color: #FF2800;
+            transition: width 0.3s ease;
+        }
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        /* Model Card Hover */
+        .model-card:hover .model-bg {
+            transform: scale(1.1);
+        }
+        
+        .clip-path-slant {
+            clip-path: polygon(0 0, 100% 0, 85% 100%, 0% 100%);
+        }
+
+        /* Marquee Styles */
+        .marquee-container {
+            position: relative;
+            width: 100vw;
+            max-width: 100%;
+            height: 120px;
+            overflow: hidden;
+            background: #FF2800;
+            display: flex;
+            align-items: center;
+            z-index: 20;
+        }
+        
+        .marquee-content {
+            display: flex;
+            white-space: nowrap;
+            will-change: transform;
+        }
+        
+        .marquee-item {
+            font-family: 'Racing Sans One', cursive;
+            font-size: 4rem;
+            font-weight: 900;
+            color: white; /* text-black */
+            margin-right: 4rem;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+        }
+
+        /* Horizontal Scroll Section */
+        .horizontal-scroll-section {
+            width: 100%; /* 400% for 4 panels */
+            height: 100vh;
+            display: flex;
+            flex-wrap: nowrap;
+            overflow: hidden;
+        }
+        
+        .hs-panel {
+            width: 100vw;
+            height: 100vh;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Magnetic Button */
+        .magnetic-btn {
+            display: inline-block;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        /* Atelier Hover Effect */
+        .atelier-option {
+            transition: all 0.5s ease;
+        }
+        .atelier-option:hover {
+            background-color: #FF2800;
+            color: white;
+        }
+
+        /* Text Reveal Masking */
+        .text-line-wrapper {
+            overflow: hidden;
+            display: block;
+        }
+        .text-line-inner {
+            display: block;
+            transform: translateY(100%);
+            will-change: transform;
+        }
+
+        /* History Progress Bar */
+        .history-progress-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: rgba(255,255,255,0.1);
+            z-index: 50;
+        }
+        .history-progress-bar {
+            height: 100%;
+            width: 0%;
+            background: #FF2800;
+            transition: width 0.1s linear;
+        }
+    </style>
+</head>
+<body class="antialiased transition-colors duration-700 ease-in-out">
+    <!-- Custom Cursor -->
+    <div class="cursor hidden md:block"></div>
+    <div class="cursor-dot hidden md:block"></div>
+
+    <!-- Loader -->
+    <div id="loader" class="fixed inset-0 z-[100] bg-black flex items-center justify-center">
+        <div class="text-center">
+            <div class="text-6xl font-bold mb-4 relative overflow-hidden">
+                <span class="inline-block transform translate-y-full loader-text racing-font text-white">FERRARI</span>
+            </div>
+            <div class="w-48 h-1 bg-gray-800 mx-auto relative overflow-hidden">
+                <div class="loader-bar absolute top-0 left-0 h-full w-full bg-ferrari-red transform -translate-x-full"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="fixed w-full z-50 transition-all duration-300 py-6 px-8 md:px-16 text-white" id="main-header">
+        <div class="flex justify-between items-center">
+            <!-- Logo -->
+            <div class="w-32 relative z-10 cursor-pointer group">
+               <div class="flex flex-col items-center">
+                   <img src="https://www.svgrepo.com/show/303485/ferrari-logo.svg" alt="Ferrari Logo" class="h-20 drop-shadow-lg object-contain rounded-2xl hover:scale-105 transition-transform duration-300">
+               </div>
+            </div>
+
+            <!-- Desktop Nav -->
+            <nav class="hidden md:flex space-x-10 uppercase text-sm font-semibold tracking-widest">
+                <a href="#models" class="nav-link hover:text-gray-300 transition">Modèles</a>
+                <a href="#universe" class="nav-link hover:text-gray-300 transition">Univers</a>
+                <a href="#racing" class="nav-link hover:text-gray-300 transition">Scuderia</a>
+                <a href="#store" class="nav-link hover:text-gray-300 transition">Store</a>
+            </nav>
+
+            <!-- Icons -->
+            <div class="flex items-center space-x-6 text-lg">
+                <a href="#" class="hover:text-ferrari-red transition transform hover:scale-110"><i class="fas fa-search"></i></a>
+                <a href="#" class="hover:text-ferrari-red transition transform hover:scale-110"><i class="fas fa-user"></i></a>
+                <button class="md:hidden text-2xl" id="mobile-menu-btn"><i class="fas fa-bars"></i></button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="relative h-screen w-full overflow-hidden flex items-center justify-center">
+        <!-- Background Video/Image Placeholder (Using a high quality car image for reliability) -->
+        <div class="absolute inset-0 z-0">
+            <img src="https://images.unsplash.com/photo-1592198084033-aade902d1aae?q=80&w=2070&auto=format&fit=crop" alt="Ferrari Hero" class="w-full h-full object-cover scale-110" id="hero-bg">
+        </div>
+        <div class="absolute inset-0 hero-overlay z-0"></div>
+
+        <!-- Content -->
+        <div class="relative z-10 text-center px-4">
+            <h2 class="text-ferrari-red font-bold tracking-[0.3em] mb-4 uppercase opacity-0 translate-y-10 hero-elem">La Perfection Italienne</h2>
+            <h1 class="text-5xl md:text-8xl lg:text-9xl font-black uppercase italic leading-none mb-8 mix-blend-overlay opacity-0 translate-y-10 hero-elem racing-font">
+                PUISSANCE<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400">ABSOLUE</span>
+            </h1>
+            
+            <div class="opacity-0 translate-y-10 hero-elem">
+                <a href="#models" class="group relative inline-flex items-center justify-center px-8 py-4 overflow-hidden font-bold text-white transition-all duration-300 bg-transparent border-2 border-white rounded-none hover:bg-white hover:text-black">
+                    <span class="absolute w-0 h-0 transition-all duration-500 ease-out bg-white rounded-full group-hover:w-56 group-hover:h-56 opacity-10"></span>
+                    <span class="relative uppercase tracking-widest">Découvrir la SF90</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Scroll Indicator -->
+        <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-10 flex flex-col items-center opacity-0 hero-elem delay-1000">
+            <span class="text-xs uppercase tracking-widest mb-2">Scroll</span>
+            <div class="w-[1px] h-12 bg-white/20 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-1/2 bg-ferrari-red animate-bounce"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Marquee Section -->
+    <div class="marquee-container" data-bgcolor="#111">
+        <div class="marquee-content">
+            <span class="marquee-item">PASSION <i class="fas fa-bolt text-3xl ml-6 text-black"></i></span>
+            <span class="marquee-item">PERFORMANCE <i class="fas fa-flag-checkered text-3xl ml-6 text-black"></i></span>
+            <span class="marquee-item">INNOVATION <i class="fas fa-cogs text-3xl ml-6 text-black"></i></span>
+            <span class="marquee-item">SCUDERIA FERRARI <i class="fas fa-trophy text-3xl ml-6 text-black"></i></span>
+             <span class="marquee-item">PASSION <i class="fas fa-bolt text-3xl ml-6 text-black"></i></span>
+            <span class="marquee-item">PERFORMANCE <i class="fas fa-flag-checkered text-3xl ml-6 text-black"></i></span>
+            <span class="marquee-item">INNOVATION <i class="fas fa-cogs text-3xl ml-6 text-black"></i></span>
+            <span class="marquee-item">SCUDERIA FERRARI <i class="fas fa-trophy text-3xl ml-6 text-black"></i></span>
+        </div>
+    </div>
+
+    <!-- Kinetic Typography Manifesto -->
+    <section class="py-32 bg-ferrari-red overflow-hidden relative flex flex-col justify-center items-center" data-bgcolor="#FF2800">
+        <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10"></div>
+        
+        <div class="kinetic-row w-full whitespace-nowrap">
+            <h2 class="text-[10vw] font-black italic uppercase leading-none text-black opacity-20" style="font-family: 'Racing Sans One'">
+                Speed &bull; Adrenaline &bull; Power &bull; Speed &bull; Adrenaline &bull; Power &bull;
+            </h2>
+        </div>
+        <div class="kinetic-row w-full whitespace-nowrap" dir="rtl">
+            <h2 class="text-[10vw] font-black italic uppercase leading-none text-white mix-blend-overlay" style="font-family: 'Racing Sans One'">
+                Emotion &bull; Legacy &bull; Future &bull; Emotion &bull; Legacy &bull; Future &bull;
+            </h2>
+        </div>
+        <div class="kinetic-row w-full whitespace-nowrap">
+            <h2 class="text-[10vw] font-black italic uppercase leading-none text-black opacity-20" style="font-family: 'Racing Sans One'">
+                Maranello &bull; Italy &bull; World &bull; Maranello &bull; Italy &bull; World &bull;
+            </h2>
+        </div>
+        
+        <div class="absolute z-10">
+             <img src="https://www.svgrepo.com/show/303485/ferrari-logo.svg" alt="Ferrari Badge" class="w-32 md:w-48 drop-shadow-2xl animate-pulse">
+        </div>
+    </section>
+
+    <!-- Models Section -->
+    <section id="models" class="py-24 relative overflow-hidden" data-bgcolor="#050505">
+        <div class="container mx-auto px-4 md:px-16">
+            <div class="flex justify-between items-end mb-16">
+                <div>
+                    <span class="text-ferrari-red uppercase tracking-widest font-bold text-sm block mb-2 reveal-text">Chef-d'œuvre</span>
+                    <h2 class="text-4xl md:text-6xl font-bold uppercase reveal-text">Nos Modèles</h2>
+                </div>
+                <a href="#" class="hidden md:flex items-center text-sm font-bold uppercase tracking-widest hover:text-ferrari-red transition group reveal-text">
+                    Voir tout <i class="fas fa-arrow-right ml-2 transform group-hover:translate-x-2 transition"></i>
+                </a>
+            </div>
+
+            <!-- Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                
+                <!-- Card 1 -->
+                <div class="group relative h-[500px] w-full overflow-hidden cursor-pointer model-card opacity-0 translate-y-20">
+                    <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 model-bg" style="background-image: url('https://th.bing.com/th/id/R.ca654f134fd0fbbd51d4190ddf08f787?rik=OJ5I6y8Icq9PYg&riu=http%3a%2f%2fst.automobilemag.com%2fuploads%2fsites%2f5%2f2021%2f05%2f2021-Ferrari-SF90.jpg&ehk=WFz4KUJ8Y%2b2ssPmJt3rsR2qA%2b6XodnJ9N3g8yAfnPI4%3d&risl=&pid=ImgRaw&r=0');"></div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80"></div>
+                    
+                    <div class="absolute bottom-0 left-0 p-8 w-full transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                        <h3 class="text-3xl font-bold italic uppercase mb-1">SF90 Stradale</h3>
+                        <p class="text-gray-400 text-sm mb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">Hybride Rechargeable</p>
+                        <div class="w-12 h-1 bg-ferrari-red transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="group relative h-[500px] w-full overflow-hidden cursor-pointer model-card opacity-0 translate-y-20 md:translate-y-0 mt-0 md:mt-16">
+                    <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 model-bg" style="background-image: url('https://images.unsplash.com/photo-1583121274602-3e2820c69888?q=80&w=2070&auto=format&fit=crop');"></div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80"></div>
+                    
+                    <div class="absolute bottom-0 left-0 p-8 w-full transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                        <h3 class="text-3xl font-bold italic uppercase mb-1">F8 Tributo</h3>
+                        <p class="text-gray-400 text-sm mb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">V8 Turbo</p>
+                        <div class="w-12 h-1 bg-ferrari-red transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="group relative h-[500px] w-full overflow-hidden cursor-pointer model-card opacity-0 translate-y-20">
+                    <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 model-bg" style="background-image: url('https://www.topgear.com/sites/default/files/cars-car/carousel/2020/08/_p2a2965.jpg?w=1784&h=1004');"></div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80"></div>
+                    
+                    <div class="absolute bottom-0 left-0 p-8 w-full transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                        <h3 class="text-3xl font-bold italic uppercase mb-1">Roma</h3>
+                        <p class="text-gray-400 text-sm mb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">La Nuova Dolce Vita</p>
+                        <div class="w-12 h-1 bg-ferrari-red transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Horizontal Scroll History Section -->
+    <section id="history" class="bg-black relative overflow-hidden" data-bgcolor="#000000">
+        <!-- Progress Bar -->
+        <div class="history-progress-container">
+            <div class="history-progress-bar"></div>
+        </div>
+        
+        <div class="horizontal-scroll-section">
+            <!-- Panel 1: Intro -->
+            <div class="hs-panel bg-black text-white">
+                <div class="text-center px-4">
+                    <span class="text-ferrari-red uppercase tracking-[0.5em] text-sm font-bold mb-4 block">Héritage</span>
+                    <h2 class="text-6xl md:text-9xl font-black uppercase italic racing-font mb-6">1947</h2>
+                    <p class="text-2xl text-gray-400 max-w-2xl mx-auto">Le début d'une légende. La 125 S, première voiture portant le nom Ferrari.</p>
+                    <img src="https://images.unsplash.com/photo-1592198084033-aade902d1aae?q=80&w=2070&auto=format&fit=crop" class="w-96 h-64 object-cover mx-auto mt-10 rounded-lg opacity-60" alt="1947">
+                </div>
+            </div>
+
+            <!-- Panel 2: F40 -->
+            <div class="hs-panel bg-[#1a1a1a] text-white relative">
+                <div class="absolute inset-0 opacity-30 bg-[url('https://images.unsplash.com/photo-1622190604711-6441628a45a1?q=80&w=2071&auto=format&fit=crop')] bg-cover bg-center grayscale"></div>
+                <div class="relative z-10 flex flex-col items-center">
+                    <h2 class="text-6xl md:text-9xl font-black uppercase italic racing-font mb-2 text-ferrari-red">1987</h2>
+                    <h3 class="text-4xl font-bold uppercase mb-6">F40</h3>
+                    <p class="text-xl max-w-xl text-center">La dernière voiture approuvée personnellement par Enzo Ferrari. Une icône brute.</p>
+                </div>
+            </div>
+
+            <!-- Panel 3: Enzo -->
+            <div class="hs-panel bg-black text-white">
+                <div class="flex flex-col md:flex-row items-center gap-12 px-8">
+                     <div class="md:w-1/2">
+                         <img src="https://th.bing.com/th/id/R.a31827b9e47a825324a2e04ce3a7453b?rik=509sRLjaAFC%2big&pid=ImgRaw&r=0" class="w-full rounded-lg shadow-2xl transform -rotate-3 hover:rotate-0 transition duration-500" alt="Enzo">
+                     </div>
+                     <div class="md:w-1/2">
+                        <h2 class="text-5xl md:text-8xl font-black uppercase italic racing-font mb-4">2002</h2>
+                        <h3 class="text-3xl font-bold uppercase mb-4 text-gray-300">Enzo Ferrari</h3>
+                        <p class="text-lg text-gray-400 leading-relaxed">L'hypercar qui a défini une génération. Technologie F1 pour la route.</p>
+                     </div>
+                </div>
+            </div>
+
+            <!-- Panel 4: Future -->
+            <div class="hs-panel bg-ferrari-red text-white">
+                <div class="text-center">
+                    <h2 class="text-6xl md:text-9xl font-black uppercase italic racing-font mb-8 text-black">2024</h2>
+                    <h3 class="text-4xl font-bold uppercase mb-8">L'Ère Hybride</h3>
+                    <a href="#models" class="inline-block bg-black text-white px-12 py-5 font-bold uppercase tracking-widest hover:bg-white hover:text-black transition-colors duration-300">
+                        Configurer la vôtre
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats / Technical Section -->
+    <section class="py-24 bg-white text-black relative" id="universe" data-bgcolor="#ffffff">
+        <div class="container mx-auto px-4 flex flex-col md:flex-row items-center">
+            <div class="md:w-1/2 pr-0 md:pr-16 mb-12 md:mb-0">
+                <h2 class="text-4xl md:text-7xl font-bold uppercase mb-6 leading-tight reveal-dark">L'Ingénierie <br><span class="text-ferrari-red">Sans Limite</span></h2>
+                <p class="text-gray-600 mb-8 text-lg leading-relaxed reveal-dark">
+                    Chaque Ferrari est le résultat d'une obsession pour la performance. De l'aérodynamisme actif aux moteurs V12 atmosphériques, nous repoussons les frontières de la physique.
+                </p>
+                
+                <div class="grid grid-cols-2 gap-8 mt-12">
+                    <div class="border-l-4 border-ferrari-red pl-6 reveal-dark">
+                        <span class="block text-5xl font-bold counter" data-target="1000">0</span>
+                        <span class="text-sm uppercase tracking-widest font-semibold text-gray-500">Chevaux (CV)</span>
+                    </div>
+                    <div class="border-l-4 border-ferrari-red pl-6 reveal-dark delay-100">
+                        <span class="block text-5xl font-bold flex items-baseline"><span class="counter" data-target="2">0</span>.5</span>
+                        <span class="text-sm uppercase tracking-widest font-semibold text-gray-500">0-100 km/h (s)</span>
+                    </div>
+                </div>
+            </div>
+            <div class="md:w-1/2 relative">
+                <div class="overflow-hidden reveal-image-mask">
+                    <img src="https://images.unsplash.com/photo-1594535182308-8ff240fde7a1?q=80&w=1974&auto=format&fit=crop" alt="Engine" class="w-full object-cover transform scale-110 transition-transform duration-1000 hover:scale-100">
+                </div>
+                <!-- Decorative elements -->
+                <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-ferrari-red z-[-1] hidden md:block"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Atelier / Customization Section -->
+    <section id="atelier" class="py-24 bg-[#050505] relative overflow-hidden border-y border-gray-900" data-bgcolor="#050505">
+        <div class="container mx-auto px-4 md:px-16 relative z-10">
+            <div class="flex flex-col md:flex-row justify-between items-start mb-16">
+                <div>
+                    <span class="text-ferrari-red uppercase tracking-widest font-bold text-sm block mb-2">Tailor Made</span>
+                    <h2 class="text-4xl md:text-6xl font-bold uppercase mb-4 text-white">Atelier Ferrari</h2>
+                    <p class="text-gray-400 max-w-xl">Votre Ferrari, unique au monde. Explorez les possibilités infinies de personnalisation dans nos studios exclusifs.</p>
+                </div>
+                <div class="mt-8 md:mt-0">
+                    <button class="border border-white text-white px-8 py-3 uppercase text-sm font-bold tracking-widest hover:bg-white hover:text-black transition duration-300 magnetic-btn">
+                        Prendre Rendez-vous
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-1 text-center">
+                <!-- Option 1 -->
+                <div class="atelier-option p-10 border border-gray-800 cursor-pointer group">
+                    <i class="fas fa-palette text-4xl mb-6 text-gray-500 group-hover:text-white transition"></i>
+                    <h3 class="text-xl font-bold uppercase mb-2">Couleurs</h3>
+                    <p class="text-sm text-gray-500 group-hover:text-gray-300">Historiques, spéciales, ou sur échantillon.</p>
+                </div>
+                <!-- Option 2 -->
+                <div class="atelier-option p-10 border border-gray-800 cursor-pointer group">
+                    <i class="fas fa-chair text-4xl mb-6 text-gray-500 group-hover:text-white transition"></i>
+                    <h3 class="text-xl font-bold uppercase mb-2">Intérieurs</h3>
+                    <p class="text-sm text-gray-500 group-hover:text-gray-300">Cuirs, Alcantara, et fibres techniques.</p>
+                </div>
+                <!-- Option 3 -->
+                <div class="atelier-option p-10 border border-gray-800 cursor-pointer group">
+                    <i class="fas fa-steering-wheel text-4xl mb-6 text-gray-500 group-hover:text-white transition"></i>
+                    <h3 class="text-xl font-bold uppercase mb-2">Détails</h3>
+                    <p class="text-sm text-gray-500 group-hover:text-gray-300">Étriers, jantes et éléments en carbone.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Background Accent -->
+        <div class="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-[#111] to-transparent pointer-events-none"></div>
+    </section>
+
+    <!-- Scuderia Section (Parallax) -->
+    <section id="racing" class="h-[80vh] relative flex items-center justify-center overflow-hidden" data-bgcolor="#111111">
+        <div class="absolute inset-0 z-0">
+            <img src="https://images.unsplash.com/photo-1532906618763-684469a4955c?q=80&w=2070&auto=format&fit=crop" alt="F1" class="w-full h-full object-cover" id="scuderia-bg">
+        </div>
+        <div class="absolute inset-0 bg-black/60 z-0"></div>
+        
+        <div class="relative z-10 text-center">
+            <div class="inline-block border border-ferrari-red px-4 py-2 mb-4 text-ferrari-red uppercase tracking-widest text-sm font-bold">Scuderia Ferrari</div>
+            <h2 class="text-6xl md:text-9xl font-black italic uppercase text-white mb-6 tracking-tighter racing-font reveal-scale">Born to <span class="text-stroke text-transparent" style="-webkit-text-stroke: 2px #FF2800;">Race</span></h2>
+            <p class="max-w-2xl mx-auto text-gray-300 mb-10 text-lg">L'histoire de la course coule dans nos veines. Rejoignez la légende sur les circuits du monde entier.</p>
+            <button class="bg-ferrari-red text-white px-10 py-4 font-bold uppercase tracking-widest hover:bg-white hover:text-ferrari-red transition-colors duration-300 clip-path-slant">
+                Rejoindre l'équipe
+            </button>
+        </div>
+    </section>
+
+    <!-- Newsletter -->
+    <section class="py-20 bg-[#0a0a0a] border-b border-gray-900">
+        <div class="container mx-auto px-4 text-center">
+            <h3 class="text-2xl font-bold uppercase mb-2">Restez informé</h3>
+            <p class="text-gray-500 mb-8">Recevez les dernières actualités de Maranello.</p>
+            <form class="max-w-lg mx-auto flex border-b border-gray-700 pb-2 focus-within:border-ferrari-red transition-colors">
+                <input type="email" placeholder="Votre adresse email" class="bg-transparent w-full outline-none text-white placeholder-gray-600">
+                <button type="submit" class="text-gray-400 hover:text-ferrari-red uppercase text-sm font-bold tracking-widest">S'inscrire</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- 3D Parallax Innovation Section -->
+    <section id="innovation" class="relative h-[80vh] w-full overflow-hidden bg-black flex items-center justify-center" style="perspective: 1000px;" data-bgcolor="#000000">
+        <div class="relative w-full h-full flex items-center justify-center preserve-3d" id="innovation-content" style="transform-style: preserve-3d;">
+            
+            <!-- Background Layer (Deepest) -->
+            <div class="absolute inset-0 z-0 scale-110 parallax-layer" style="transform: translateZ(-100px);">
+                <img src="https://images.unsplash.com/photo-1580273916550-e323be2ae537?q=80&w=1964&auto=format&fit=crop" 
+                     alt="Cockpit" 
+                     class="w-full h-full object-cover opacity-40 grayscale hover:grayscale-0 transition-all duration-700">
+                <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black"></div>
+            </div>
+
+            <!-- Floating Elements (Middle) -->
+            <div class="absolute top-20 left-20 w-32 h-32 border-l-2 border-t-2 border-ferrari-red opacity-50 parallax-layer" style="transform: translateZ(50px);"></div>
+            <div class="absolute bottom-20 right-20 w-32 h-32 border-r-2 border-b-2 border-white opacity-50 parallax-layer" style="transform: translateZ(50px);"></div>
+            
+            <!-- Content Layer (Closest) -->
+            <div class="relative z-20 text-center pointer-events-none parallax-layer" style="transform: translateZ(100px);">
+                <span class="text-ferrari-red uppercase tracking-[0.5em] text-sm font-bold mb-4 block">Futur Immédiat</span>
+                <h2 class="text-6xl md:text-9xl font-black uppercase italic text-white mb-2 racing-font drop-shadow-2xl">
+                    Cockpit
+                </h2>
+                <h2 class="text-6xl md:text-9xl font-black uppercase italic text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-600 racing-font opacity-80 mix-blend-overlay" style="transform: translateY(-30px) scale(0.95);">
+                    Digital
+                </h2>
+                <p class="text-white max-w-lg mx-auto text-lg mt-8 bg-black/50 backdrop-blur-sm p-4 rounded border border-white/10">
+                    L'interface homme-machine redéfinie. Une immersion totale.
+                </p>
+            </div>
+            
+            <!-- Very Close Floating Particles -->
+            <div class="absolute top-1/2 left-1/4 w-2 h-24 bg-gradient-to-b from-ferrari-red to-transparent parallax-layer blur-sm" style="transform: translateZ(150px);"></div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-black text-white pt-20 pb-10">
+        <div class="container mx-auto px-4 md:px-16">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+                <!-- Logo Column -->
+                <div class="flex flex-col items-start">
+                    <img src="https://www.svgrepo.com/show/303485/ferrari-logo.svg" alt="Ferrari Logo" class="w-16 mb-6 opacity-80 rounded-2xl">
+                    <p class="text-gray-500 text-sm leading-relaxed">
+                        Ferrari S.p.A.<br>
+                        Via Abetone Inferiore n. 4,<br>
+                        I-41053 Maranello (MO)
+                    </p>
+                </div>
+
+                <!-- Links -->
+                <div>
+                    <h4 class="text-white font-bold uppercase tracking-widest mb-6 text-sm">Racing</h4>
+                    <ul class="space-y-3 text-gray-500 text-sm">
+                        <li><a href="#" class="hover:text-ferrari-red transition">Scuderia Ferrari</a></li>
+                        <li><a href="#" class="hover:text-ferrari-red transition">Ferrari Challenge</a></li>
+                        <li><a href="#" class="hover:text-ferrari-red transition">GT Competizioni</a></li>
+                        <li><a href="#" class="hover:text-ferrari-red transition">Esports</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="text-white font-bold uppercase tracking-widest mb-6 text-sm">Automobiles</h4>
+                    <ul class="space-y-3 text-gray-500 text-sm">
+                        <li><a href="#" class="hover:text-ferrari-red transition">Gamme</a></li>
+                        <li><a href="#" class="hover:text-ferrari-red transition">Personnalisation</a></li>
+                        <li><a href="#" class="hover:text-ferrari-red transition">Occasions Certifiées</a></li>
+                        <li><a href="#" class="hover:text-ferrari-red transition">Services Financiers</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="text-white font-bold uppercase tracking-widest mb-6 text-sm">Social</h4>
+                    <div class="flex space-x-4">
+                        <a href="#" class="w-10 h-10 rounded-full border border-gray-800 flex items-center justify-center hover:bg-ferrari-red hover:border-ferrari-red transition-all duration-300">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full border border-gray-800 flex items-center justify-center hover:bg-ferrari-red hover:border-ferrari-red transition-all duration-300">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full border border-gray-800 flex items-center justify-center hover:bg-ferrari-red hover:border-ferrari-red transition-all duration-300">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full border border-gray-800 flex items-center justify-center hover:bg-ferrari-red hover:border-ferrari-red transition-all duration-300">
+                            <i class="fab fa-youtube"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-900 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-gray-600">
+                <p>&copy; 2023 Ferrari S.p.A. All rights reserved.</p>
+                <div class="space-x-6 mt-4 md:mt-0">
+                    <a href="#" class="hover:text-white">Mentions Légales</a>
+                    <a href="#" class="hover:text-white">Politique de Confidentialité</a>
+                    <a href="#" class="hover:text-white">Cookies</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript for Animations -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Register ScrollTrigger
+            gsap.registerPlugin(ScrollTrigger);
+
+            // --- Helper: Wrap Text in Spans for Reveal ---
+            function wrapLines(selector) {
+                document.querySelectorAll(selector).forEach(el => {
+                    const content = el.innerText;
+                    el.innerHTML = `<span class="text-line-wrapper"><span class="text-line-inner">${content}</span></span>`;
+                });
+            }
+            // Wrap specific headers
+            document.querySelectorAll('.reveal-text, .reveal-dark').forEach(el => {
+                if(el.children.length === 0) { // Only wrap if no children to avoid breaking structure
+                     const text = el.innerText;
+                     el.innerHTML = '';
+                     const wrapper = document.createElement('span');
+                     wrapper.className = 'text-line-wrapper';
+                     const inner = document.createElement('span');
+                     inner.className = 'text-line-inner';
+                     inner.innerText = text;
+                     wrapper.appendChild(inner);
+                     el.appendChild(wrapper);
+                }
+            });
+
+            // --- DYNAMIC BACKGROUND COLOR CHANGE ---
+            // Select all sections with data-bgcolor attribute
+            const sections = document.querySelectorAll('[data-bgcolor]');
+            
+            sections.forEach((section) => {
+                ScrollTrigger.create({
+                    trigger: section,
+                    start: "top 50%",
+                    end: "bottom 50%",
+                    onEnter: () => {
+                        document.body.style.backgroundColor = section.getAttribute('data-bgcolor');
+                    },
+                    onEnterBack: () => {
+                        document.body.style.backgroundColor = section.getAttribute('data-bgcolor');
+                    }
+                });
+            });
+
+            // --- KINETIC TYPOGRAPHY ---
+            const kineticRows = document.querySelectorAll('.kinetic-row');
+            if(kineticRows.length > 0) {
+                kineticRows.forEach((row, index) => {
+                    // Alternating direction
+                    const direction = index % 2 === 0 ? -1 : 1;
+                    gsap.to(row, {
+                        scrollTrigger: {
+                            trigger: row.parentElement,
+                            start: "top bottom",
+                            end: "bottom top",
+                            scrub: 1
+                        },
+                        x: window.innerWidth * 0.5 * direction,
+                        ease: "none"
+                    });
+                });
+            }
+
+
+            // Cursor Logic
+            const cursor = document.querySelector('.cursor');
+            const cursorDot = document.querySelector('.cursor-dot');
+            
+            document.addEventListener('mousemove', (e) => {
+                gsap.to(cursor, {
+                    x: e.clientX - 10,
+                    y: e.clientY - 10,
+                    duration: 0.2,
+                    ease: 'power2.out'
+                });
+                gsap.to(cursorDot, {
+                    x: e.clientX - 2,
+                    y: e.clientY - 2,
+                    duration: 0.1,
+                    ease: 'power2.out'
+                });
+            });
+
+            // Loader Animation
+            const loaderTimeline = gsap.timeline({
+                onComplete: () => {
+                    gsap.to('#loader', {
+                        yPercent: -100,
+                        duration: 1,
+                        ease: 'power4.inOut'
+                    });
+                    startIntro();
+                }
+            });
+
+            loaderTimeline
+                .to('.loader-text', {
+                    y: 0,
+                    duration: 1,
+                    ease: 'power4.out'
+                })
+                .to('.loader-bar', {
+                    x: 0,
+                    duration: 1.5,
+                    ease: 'power2.inOut'
+                }, "-=0.5")
+                .to('.loader-text', {
+                    y: -100,
+                    duration: 0.5,
+                    delay: 0.5,
+                    ease: 'power2.in'
+                });
+
+            // Intro Animation after loader
+            function startIntro() {
+                const heroTl = gsap.timeline();
+                
+                heroTl
+                    .to('.hero-elem', {
+                        y: 0,
+                        opacity: 1,
+                        stagger: 0.2,
+                        duration: 1.2,
+                        ease: 'power3.out'
+                    })
+                    .from('#hero-bg', {
+                        scale: 1.3,
+                        duration: 2,
+                        ease: 'power2.out'
+                    }, "-=1.5");
+            }
+
+            // Navbar Scroll Effect
+            window.addEventListener('scroll', () => {
+                const header = document.getElementById('main-header');
+                if (window.scrollY > 50) {
+                    header.classList.add('bg-black', 'py-4');
+                    header.classList.remove('py-6');
+                } else {
+                    header.classList.remove('bg-black', 'py-4');
+                    header.classList.add('py-6');
+                }
+            });
+
+            // --- ANIMATION: Text Reveals (Split Effect) ---
+            gsap.utils.toArray('.text-line-inner').forEach(text => {
+                gsap.to(text, {
+                    scrollTrigger: {
+                        trigger: text,
+                        start: 'top 90%',
+                    },
+                    y: 0,
+                    duration: 1.2,
+                    ease: 'power4.out'
+                });
+            });
+
+            // --- ANIMATION: Skew on Scroll (Models) ---
+            let proxy = { skew: 0 },
+                skewSetter = gsap.quickSetter(".model-card", "skewY", "deg"),
+                clamp = gsap.utils.clamp(-5, 5);
+
+            ScrollTrigger.create({
+                onUpdate: (self) => {
+                    let skew = clamp(self.getVelocity() / -300);
+                    if (Math.abs(skew) > Math.abs(proxy.skew)) {
+                        proxy.skew = skew;
+                        gsap.to(proxy, {skew: 0, duration: 0.8, ease: "power3", overwrite: true, onUpdate: () => skewSetter(proxy.skew)});
+                    }
+                }
+            });
+
+            // Models Fade In
+            gsap.utils.toArray('.model-card').forEach((card, i) => {
+                gsap.to(card, {
+                    scrollTrigger: {
+                        trigger: card,
+                        start: 'top 85%',
+                    },
+                    y: 0,
+                    opacity: 1,
+                    duration: 0.8,
+                    ease: 'power3.out',
+                    delay: i * 0.1
+                });
+            });
+
+            // Stats Counter Animation
+            gsap.utils.toArray('.counter').forEach(counter => {
+                const target = parseFloat(counter.getAttribute('data-target'));
+                
+                ScrollTrigger.create({
+                    trigger: counter,
+                    start: 'top 80%',
+                    once: true,
+                    onEnter: () => {
+                        gsap.to(counter, {
+                            innerHTML: target,
+                            duration: 2,
+                            snap: { innerHTML: 1 },
+                            onUpdate: function() {
+                                this.targets()[0].innerHTML = Math.ceil(this.targets()[0].innerHTML);
+                            }
+                        });
+                    }
+                });
+            });
+
+            // Scuderia Parallax
+            gsap.to('#scuderia-bg', {
+                scrollTrigger: {
+                    trigger: '#racing',
+                    start: 'top bottom',
+                    end: 'bottom top',
+                    scrub: true
+                },
+                yPercent: 20,
+                scale: 1.1
+            });
+            
+            gsap.from('.reveal-scale', {
+                scrollTrigger: {
+                    trigger: '.reveal-scale',
+                    start: 'top 80%',
+                },
+                scale: 0.8,
+                opacity: 0,
+                duration: 1,
+                ease: 'back.out(1.7)'
+            });
+
+            // 3D Parallax Section Logic (True 3D Tilt)
+            const parallaxSection = document.getElementById('innovation');
+            const parallaxContent = document.getElementById('innovation-content');
+            
+            if(parallaxSection && parallaxContent) {
+                parallaxSection.addEventListener('mousemove', (e) => {
+                    const rect = parallaxSection.getBoundingClientRect();
+                    // Calculate mouse position relative to center (from -0.5 to 0.5)
+                    const xPct = (e.clientX - rect.left - rect.width / 2) / rect.width;
+                    const yPct = (e.clientY - rect.top - rect.height / 2) / rect.height;
+                    
+                    // Tilt the entire container
+                    gsap.to(parallaxContent, {
+                        rotationY: xPct * 20, // Rotate around Y axis based on X position
+                        rotationX: -yPct * 20, // Rotate around X axis based on Y position (inverted)
+                        duration: 0.5,
+                        ease: 'power2.out'
+                    });
+
+                    // Move inner layers slightly for extra parallax depth
+                    gsap.utils.toArray('.parallax-layer').forEach((layer, i) => {
+                        const depth = (i + 1) * 20;
+                        gsap.to(layer, {
+                            x: xPct * depth,
+                            y: yPct * depth,
+                            duration: 0.5,
+                            ease: 'power2.out'
+                        });
+                    });
+                });
+
+                parallaxSection.addEventListener('mouseleave', () => {
+                    // Reset to flat
+                    gsap.to(parallaxContent, {
+                        rotationY: 0,
+                        rotationX: 0,
+                        duration: 1,
+                        ease: 'elastic.out(1, 0.5)'
+                    });
+                    gsap.utils.toArray('.parallax-layer').forEach(layer => {
+                         gsap.to(layer, { x: 0, y: 0, duration: 1 });
+                    });
+                });
+            }
+
+            // Mobile Menu Toggle
+            const mobileBtn = document.getElementById('mobile-menu-btn');
+            const mobileMenu = document.createElement('div');
+            mobileMenu.className = 'fixed inset-0 bg-black z-40 flex flex-col items-center justify-center space-y-8 text-2xl font-bold uppercase tracking-widest transform translate-x-full transition-transform duration-300 md:hidden';
+            mobileMenu.innerHTML = `
+                <a href="#models" class="mobile-link hover:text-ferrari-red">Modèles</a>
+                <a href="#universe" class="mobile-link hover:text-ferrari-red">Univers</a>
+                <a href="#racing" class="mobile-link hover:text-ferrari-red">Scuderia</a>
+                <a href="#store" class="mobile-link hover:text-ferrari-red">Store</a>
+                <button class="absolute top-6 right-8 text-4xl" id="close-mobile-menu">&times;</button>
+            `;
+            document.body.appendChild(mobileMenu);
+
+            const closeBtn = mobileMenu.querySelector('#close-mobile-menu');
+            const mobileLinks = mobileMenu.querySelectorAll('.mobile-link');
+
+            function toggleMenu() {
+                const isOpen = mobileMenu.classList.contains('translate-x-0');
+                mobileMenu.classList.toggle('translate-x-0', !isOpen);
+                mobileMenu.classList.toggle('translate-x-full', isOpen);
+            }
+
+            mobileBtn.addEventListener('click', toggleMenu);
+            closeBtn.addEventListener('click', toggleMenu);
+            mobileLinks.forEach(link => link.addEventListener('click', toggleMenu));
+
+            // --- MARQUEE ---
+            gsap.to(".marquee-content", {
+                xPercent: -50,
+                repeat: -1,
+                duration: 20,
+                ease: "linear"
+            });
+
+            // --- HORIZONTAL SCROLL & PROGRESS ---
+            const panels = gsap.utils.toArray(".hs-panel");
+            const historySection = document.querySelector(".horizontal-scroll-section");
+            const progressBar = document.querySelector(".history-progress-bar");
+
+            gsap.to(panels, {
+                xPercent: -100 * (panels.length - 1),
+                ease: "none",
+                scrollTrigger: {
+                    trigger: "#history",
+                    pin: true,
+                    scrub: 1,
+                    snap: 1 / (panels.length - 1),
+                    end: () => "+=" + historySection.offsetWidth,
+                    onUpdate: (self) => {
+                        // Update progress bar width
+                        if(progressBar) {
+                            gsap.to(progressBar, { width: (self.progress * 100) + "%", duration: 0.1, ease: "none" });
+                        }
+                    }
+                }
+            });
+
+            // --- MAGNETIC BUTTONS ---
+            const magnets = document.querySelectorAll('.magnetic-btn');
+            magnets.forEach( (magnet) => {
+                magnet.addEventListener('mousemove', (e) => {
+                    const position = magnet.getBoundingClientRect();
+                    const x = e.clientX - position.left - position.width / 2;
+                    const y = e.clientY - position.top - position.height / 2;
+                    gsap.to(magnet, { x: x * 0.3, y: y * 0.3, duration: 0.3, ease: "power2.out" });
+                });
+                magnet.addEventListener('mouseleave', (e) => {
+                    gsap.to(magnet, { x: 0, y: 0, duration: 0.3, ease: "elastic.out(1, 0.3)" });
+                });
+            });
+
+            // --- FOOTER STAGGER ---
+            gsap.from("footer .grid > div", {
+                scrollTrigger: {
+                    trigger: "footer",
+                    start: "top 90%"
+                },
+                y: 50,
+                opacity: 0,
+                duration: 1,
+                stagger: 0.1,
+                ease: "power3.out"
+            });
+
+        });
+    </script>
+</body>
+</html>
